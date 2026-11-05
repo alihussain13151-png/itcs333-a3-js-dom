@@ -1,126 +1,98 @@
+(function () {
+    document.addEventListener('DOMContentLoaded', () => {
+        const todoInput = document.getElementById('todo-input') || document.querySelector('input[type="text"]');
+        const addBtn = document.getElementById('add-btn') || document.querySelector('button');
+        const todoList = document.getElementById('todo-list');
+        const errorMsg = document.getElementById('error-msg');
+        const counter = document.getElementById('counter');
+        const filterAll = document.getElementById('filter-all');
+        const filterActive = document.getElementById('filter-active');
+        const filterDone = document.getElementById('filter-done');
 
-(() => {
-    const todoInput = document.getElementById("todo-input");
-    const addButton = document.getElementById("add-btn");
-    const todoList = document.getElementById("todo-list");
-    const errorMsg = document.getElementById("error-msg");
-    const counter = document.getElementById("counter");
+        let currentFilter = 'all';
 
-    const filterAll = document.getElementById("filter-all");
-    const filterActive = document.getElementById("filter-active");
-    const filterDone = document.getElementById("filter-done");
+        if (errorMsg) errorMsg.style.display = 'none';
 
-    let currentFilter = "all";
-
-    // Update the counter
-    function updateCounter() {
-        const items = todoList.querySelectorAll("li");
-        const remaining = Array.from(items).filter(
-            item => !item.classList.contains("completed")
-        ).length;
-
-        counter.textContent = `${remaining} item(s) left`;
-    }
-
-    // Apply the selected filter
-    function applyFilter() {
-        const items = todoList.querySelectorAll("li");
-
-        items.forEach(item => {
-            const completed = item.classList.contains("completed");
-
-            if (currentFilter === "all") {
-                item.style.display = "";
-            } else if (currentFilter === "active") {
-                item.style.display = completed ? "none" : "";
-            } else if (currentFilter === "done") {
-                item.style.display = completed ? "" : "none";
-            }
-        });
-    }
-
-    // Add a new item
-    function addItem() {
-        const text = todoInput.value.trim();
-
-        if (text === "") {
-            errorMsg.hidden = false;
-            return;
+        function updateCounter() {
+            if (!counter || !todoList) return;
+            const items = todoList.querySelectorAll('li');
+            let activeCount = 0;
+            items.forEach(item => {
+                if (!item.classList.contains('completed')) {
+                    activeCount++;
+                }
+            });
+            counter.textContent = `${activeCount} item(s) left`;
         }
 
-        errorMsg.hidden = true;
-
-        const li = document.createElement("li");
-
-        const span = document.createElement("span");
-        span.textContent = text;
-
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "Delete";
-        deleteButton.classList.add("delete-btn");
-        deleteButton.type = "button";
-
-        li.appendChild(span);
-        li.appendChild(deleteButton);
-
-        todoList.appendChild(li);
-
-        todoInput.value = "";
-
-        applyFilter();
-        updateCounter();
-    }
-
-    // Add using the button
-    addButton.addEventListener("click", addItem);
-
-    // Add using Enter
-    todoInput.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-            addItem();
-        }
-    });
-
-    // Event delegation for completing and deleting items
-    todoList.addEventListener("click", event => {
-        const deleteButton = event.target.closest(".delete-btn");
-
-        if (deleteButton && todoList.contains(deleteButton)) {
-            deleteButton.closest("li").remove();
-            updateCounter();
-            return;
+        function applyFilter(filter) {
+            currentFilter = filter;
+            if (!todoList) return;
+            const items = todoList.querySelectorAll('li');
+            items.forEach(item => {
+                const isCompleted = item.classList.contains('completed');
+                if (filter === 'all') {
+                    item.style.display = '';
+                } else if (filter === 'active') {
+                    item.style.display = isCompleted ? 'none' : '';
+                } else if (filter === 'done') {
+                    item.style.display = isCompleted ? '' : 'none';
+                }
+            });
         }
 
-        const li = event.target.closest("li");
-
-        if (li && todoList.contains(li)) {
-            if (event.target.closest(".delete-btn")) {
+        function addItem() {
+            const text = todoInput ? todoInput.value.trim() : '';
+            
+            if (!text) {
+                if (errorMsg) errorMsg.style.display = 'block';
                 return;
             }
+            
+            if (errorMsg) errorMsg.style.display = 'none';
 
-            li.classList.toggle("completed");
+            const li = document.createElement('li');
+            // إضافة الكلاس item-text ليتوافق تماماً مع توقعات ملف الاختبار
+            li.innerHTML = `<span class="item-text">${text}</span> <button class="delete-btn">Delete</button>`;
+            todoList.appendChild(li);
 
-            applyFilter();
+            if (todoInput) todoInput.value = '';
+            applyFilter(currentFilter);
             updateCounter();
         }
-    });
 
-    // Filter buttons
-    filterAll.addEventListener("click", () => {
-        currentFilter = "all";
-        applyFilter();
-    });
+        if (addBtn) {
+            addBtn.addEventListener('click', addItem);
+        }
+        if (todoInput) {
+            todoInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+        }
 
-    filterActive.addEventListener("click", () => {
-        currentFilter = "active";
-        applyFilter();
-    });
+        if (todoList) {
+            todoList.addEventListener('click', (e) => {
+                const target = e.target;
+                const li = target.closest('li');
+                if (!li) return;
 
-    filterDone.addEventListener("click", () => {
-        currentFilter = "done";
-        applyFilter();
-    });
+                if (target.classList.contains('delete-btn')) {
+                    li.remove();
+                } else {
+                    li.classList.toggle('completed');
+                }
+                
+                updateCounter();
+                applyFilter(currentFilter);
+            });
+        }
 
-    // Initial counter
-    updateCounter();
+        if (filterAll) filterAll.addEventListener('click', () => applyFilter('all'));
+        if (filterActive) filterActive.addEventListener('click', () => applyFilter('active'));
+        if (filterDone) filterDone.addEventListener('click', () => applyFilter('done'));
+
+        updateCounter();
+    });
 })();
