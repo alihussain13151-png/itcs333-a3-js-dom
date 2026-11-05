@@ -1,88 +1,97 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const input = document.getElementById("todo-input");
-    const addBtn = document.getElementById("add-btn");
-    const todoList = document.getElementById("todo-list");
-    const errorMsg = document.getElementById("error-msg");
+(function () {
+    document.addEventListener('DOMContentLoaded', () => {
+        const todoInput = document.getElementById('todo-input') || document.querySelector('input[type="text"]');
+        const addBtn = document.getElementById('add-btn') || document.querySelector('button');
+        const todoList = document.getElementById('todo-list');
+        const errorMsg = document.getElementById('error-msg');
+        const counter = document.getElementById('counter');
+        const filterAll = document.getElementById('filter-all');
+        const filterActive = document.getElementById('filter-active');
+        const filterDone = document.getElementById('filter-done');
 
-    const filterAll = document.getElementById("filter-all");
-    const filterActive = document.getElementById("filter-active");
-    const filterDone = document.getElementById("filter-done");
+        let currentFilter = 'all';
 
-    const counter = document.getElementById("counter");
+        if (errorMsg) errorMsg.style.display = 'none';
 
-    function updateCounter() {
-        const items = todoList.querySelectorAll("li");
-        const remaining = todoList.querySelectorAll("li:not(.completed)").length;
-        counter.textContent = `${remaining} item(s) left`;
-    }
-
-    function addItem() {
-        const text = input.value.trim();
-
-        if (text === "") {
-            errorMsg.style.display = "block";
-            return;
+        function updateCounter() {
+            if (!counter || !todoList) return;
+            const items = todoList.querySelectorAll('li');
+            let activeCount = 0;
+            items.forEach(item => {
+                if (!item.classList.contains('completed')) {
+                    activeCount++;
+                }
+            });
+            counter.textContent = `${activeCount} item(s) left`;
         }
 
-        errorMsg.style.display = "none";
+        function applyFilter(filter) {
+            currentFilter = filter;
+            if (!todoList) return;
+            const items = todoList.querySelectorAll('li');
+            items.forEach(item => {
+                const isCompleted = item.classList.contains('completed');
+                if (filter === 'all') {
+                    item.style.display = '';
+                } else if (filter === 'active') {
+                    item.style.display = isCompleted ? 'none' : '';
+                } else if (filter === 'done') {
+                    item.style.display = isCompleted ? '' : 'none';
+                }
+            });
+        }
 
-        const li = document.createElement("li");
+        function addItem() {
+            const text = todoInput ? todoInput.value.trim() : '';
+            
+            if (!text) {
+                if (errorMsg) errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (errorMsg) errorMsg.style.display = 'none';
 
-        const span = document.createElement("span");
-        span.textContent = text;
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${text}</span> <button class="delete-btn">Delete</button>`;
+            todoList.appendChild(li);
 
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Delete";
-        deleteBtn.className = "delete-btn";
+            if (todoInput) todoInput.value = '';
+            applyFilter(currentFilter);
+            updateCounter();
+        }
 
-        li.appendChild(span);
-        li.appendChild(deleteBtn);
+        if (addBtn) {
+            addBtn.addEventListener('click', addItem);
+        }
+        if (todoInput) {
+            todoInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+        }
 
-        todoList.appendChild(li);
+        if (todoList) {
+            todoList.addEventListener('click', (e) => {
+                const target = e.target;
+                const li = target.closest('li');
+                if (!li) return;
 
-        input.value = "";
+                if (target.classList.contains('delete-btn')) {
+                    li.remove();
+                } else {
+                    li.classList.toggle('completed');
+                }
+                
+                updateCounter();
+                applyFilter(currentFilter);
+            });
+        }
+
+        if (filterAll) filterAll.addEventListener('click', () => applyFilter('all'));
+        if (filterActive) filterActive.addEventListener('click', () => applyFilter('active'));
+        if (filterDone) filterDone.addEventListener('click', () => applyFilter('done'));
+
         updateCounter();
-    }
-
-    addBtn.addEventListener("click", addItem);
-
-    input.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-            addItem();
-        }
     });
-
-    todoList.addEventListener("click", function (e) {
-        if (e.target.classList.contains("delete-btn")) {
-            e.target.parentElement.remove();
-            updateCounter();
-        } else if (e.target.tagName === "SPAN") {
-            e.target.parentElement.classList.toggle("completed");
-            updateCounter();
-        }
-    });
-
-    filterAll.addEventListener("click", function () {
-        todoList.querySelectorAll("li").forEach(function (item) {
-            item.style.display = "";
-        });
-    });
-
-    filterActive.addEventListener("click", function () {
-        todoList.querySelectorAll("li").forEach(function (item) {
-            item.style.display = item.classList.contains("completed")
-                ? "none"
-                : "";
-        });
-    });
-
-    filterDone.addEventListener("click", function () {
-        todoList.querySelectorAll("li").forEach(function (item) {
-            item.style.display = item.classList.contains("completed")
-                ? ""
-                : "none";
-        });
-    });
-
-    updateCounter();
-});
+})();
