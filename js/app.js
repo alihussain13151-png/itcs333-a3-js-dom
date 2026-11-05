@@ -52,7 +52,6 @@
             if (errorMsg) errorMsg.style.display = 'none';
 
             const li = document.createElement('li');
-            // استخدام الكلاس item-text ليتوافق تماماً مع توقعات ملف الاختبار
             li.innerHTML = `<span class="item-text">${text}</span> <button class="delete-btn">Delete</button>`;
             todoList.appendChild(li);
 
@@ -75,13 +74,15 @@
         if (todoList) {
             todoList.addEventListener('click', (e) => {
                 const target = e.target;
-                const li = target.closest('li');
-                if (!li) return;
-
+                
                 if (target.classList.contains('delete-btn')) {
-                    li.remove();
+                    const li = target.closest('li');
+                    if (li) li.remove();
                 } else {
-                    li.classList.toggle('completed');
+                    const li = target.closest('li');
+                    if (li) {
+                        li.classList.toggle('completed');
+                    }
                 }
                 
                 updateCounter();
