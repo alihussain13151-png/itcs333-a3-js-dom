@@ -52,7 +52,8 @@
             if (errorMsg) errorMsg.style.display = 'none';
 
             const li = document.createElement('li');
-            li.innerHTML = `<span>${text}</span> <button class="delete-btn">Delete</button>`;
+            // استخدام الكلاس item-text ليتوافق تماماً مع توقعات ملف الاختبار
+            li.innerHTML = `<span class="item-text">${text}</span> <button class="delete-btn">Delete</button>`;
             todoList.appendChild(li);
 
             if (todoInput) todoInput.value = '';
@@ -91,7 +92,7 @@
         if (filterAll) filterAll.addEventListener('click', () => applyFilter('all'));
         if (filterActive) filterActive.addEventListener('click', () => applyFilter('active'));
         if (filterDone) filterDone.addEventListener('click', () => applyFilter('done'));
+
         updateCounter();
     });
 })();
- 
