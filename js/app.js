@@ -1,6 +1,105 @@
-// ITCS333 A3 starter — implement the to-do app per README.
-// You may wrap everything in a DOMContentLoaded handler or an IIFE.
-// Requirements: add / toggle-complete / delete / filter / counter,
-// using event delegation on #todo-list.
+(function () {
+    document.addEventListener('DOMContentLoaded', () => {
+        const todoInput = document.getElementById('todo-input') || document.querySelector('input[type="text"]');
+        const addBtn = document.getElementById('add-btn') || document.querySelector('button');
+        const todoList = document.getElementById('todo-list');
+        const errorMsg = document.getElementById('error-msg');
+        const counter = document.getElementById('counter');
+        const filterAll = document.getElementById('filter-all');
+        const filterActive = document.getElementById('filter-active');
+        const filterDone = document.getElementById('filter-done');
 
-// TODO: your code here
+        let currentFilter = 'all';
+
+        // Hide error message initially
+        if (errorMsg) errorMsg.style.display = 'none';
+
+        // Update active items counter
+        function updateCounter() {
+            if (!counter || !todoList) return;
+            const items = todoList.querySelectorAll('li');
+            let activeCount = 0;
+            items.forEach(item => {
+                if (!item.classList.contains('completed')) {
+                    activeCount++;
+                }
+            });
+            counter.textContent = `${activeCount} item(s) left`;
+        }
+
+        // Apply filtering logic
+        function applyFilter(filter) {
+            currentFilter = filter;
+            if (!todoList) return;
+            const items = todoList.querySelectorAll('li');
+            items.forEach(item => {
+                const isCompleted = item.classList.contains('completed');
+                if (filter === 'all') {
+                    item.style.display = '';
+                } else if (filter === 'active') {
+                    item.style.display = isCompleted ? 'none' : '';
+                } else if (filter === 'done') {
+                    item.style.display = isCompleted ? '' : 'none';
+                }
+            });
+        }
+
+        // Add a new todo item
+        function addItem() {
+            const text = todoInput ? todoInput.value.trim() : '';
+            
+            if (!text) {
+                if (errorMsg) errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (errorMsg) errorMsg.style.display = 'none';
+
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${text}</span> <button class="delete-btn">Delete</button>`;
+            todoList.appendChild(li);
+
+            if (todoInput) todoInput.value = '';
+            applyFilter(currentFilter);
+            updateCounter();
+        }
+
+        // Event Listeners for Adding Items
+        if (addBtn) {
+            addBtn.addEventListener('click', addItem);
+        }
+        if (todoInput) {
+            todoInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+        }
+
+        // Event Delegation on #todo-list (Handles both completion toggle and deletion)
+        if (todoList) {
+            todoList.addEventListener('click', (e) => {
+                const target = e.target;
+                const li = target.closest('li');
+                if (!li) return;
+
+                if (target.classList.contains('delete-btn')) {
+                    li.remove();
+                } else {
+                    li.classList.toggle('completed');
+                }
+                
+                updateCounter();
+                applyFilter(currentFilter);
+            });
+        }
+
+        // Filter Button Listeners
+        if (filterAll) filterAll.addEventListener('click', () => applyFilter('all'));
+        if (filterActive) filterActive.addEventListener('click', () => applyFilter('active'));
+        if (filterDone) filterDone.addEventListener('click', () => applyFilter('done'));
+
+        // Initial Counter Update
+        updateCounter();
+    });
+})();
