@@ -11,8 +11,10 @@
 
         let currentFilter = 'all';
 
+        // Hide error message initially
         if (errorMsg) errorMsg.style.display = 'none';
 
+        // Update active items counter
         function updateCounter() {
             if (!counter || !todoList) return;
             const items = todoList.querySelectorAll('li');
@@ -25,6 +27,7 @@
             counter.textContent = `${activeCount} item(s) left`;
         }
 
+        // Apply filtering logic
         function applyFilter(filter) {
             currentFilter = filter;
             if (!todoList) return;
@@ -41,6 +44,7 @@
             });
         }
 
+        // Add a new todo item
         function addItem() {
             const text = todoInput ? todoInput.value.trim() : '';
             
@@ -60,6 +64,7 @@
             updateCounter();
         }
 
+        // Event Listeners for Adding Items
         if (addBtn) {
             addBtn.addEventListener('click', addItem);
         }
@@ -71,6 +76,7 @@
             });
         }
 
+        // Event Delegation on #todo-list (Handles both completion toggle and deletion)
         if (todoList) {
             todoList.addEventListener('click', (e) => {
                 const target = e.target;
@@ -88,9 +94,12 @@
             });
         }
 
+        // Filter Button Listeners
         if (filterAll) filterAll.addEventListener('click', () => applyFilter('all'));
         if (filterActive) filterActive.addEventListener('click', () => applyFilter('active'));
         if (filterDone) filterDone.addEventListener('click', () => applyFilter('done'));
+
+        // Initial Counter Update
         updateCounter();
     });
 })();
